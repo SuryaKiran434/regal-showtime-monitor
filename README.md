@@ -56,7 +56,7 @@ Every 30 minutes (cron)
 ## File Structure
 
 ```
-regal-showtime-monitor/
+movie-automation/
 ├── monitor.py        Main monitoring script (run via run_now.sh from cron)
 ├── lock.py           Process lock — prevents concurrent runs
 ├── run_now.sh        Control panel: resolves Python, runs on demand, manages cron
@@ -64,7 +64,9 @@ regal-showtime-monitor/
 ├── requirements.txt  Python dependencies
 ├── .env.example      Template for .env — placeholders only, safe to commit
 ├── .env              Your credentials and config (gitignored, never committed)
-├── .github/          CI workflow and Dependabot config
+├── sonar-project.properties  SonarCloud scan configuration, used by CI
+├── .github/          CI, Slack notify and Dependabot auto-merge workflows
+├── LICENSE
 └── .gitignore
 ```
 
@@ -120,8 +122,8 @@ it would use:
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/SuryaKiran434/regal-showtime-monitor.git
-cd regal-showtime-monitor
+git clone https://github.com/SuryaKiran434/movie-automation.git
+cd movie-automation
 ```
 
 ### 2. Install Python dependencies
@@ -286,7 +288,16 @@ Coverage:
 | Interpreter resolution | all four branches in priority order (`$MOVIE_MONITOR_PYTHON`, activated venv, repo-local `venv`/`.venv`, `python3` on PATH), loud non-zero failure for an unusable override and for no interpreter at all, and that the cron entry embeds no interpreter path |
 
 CI runs on every push to `main` and every pull request. The **`Tests (Python)`**
-check is a required status check on `main`.
+check is a required status check on `main`. The same job measures coverage
+(`--cov=monitor --cov=lock`), uploads `coverage.xml` as a build artifact, and
+runs an advisory **SonarCloud** scan configured by `sonar-project.properties`;
+`continue-on-error` keeps a Sonar outage from failing the required check.
+
+`.github/dependabot.yml` opens **one grouped pull request per ecosystem per
+week** (`pip` and `github-actions`), collapsing that week's patch and minor
+bumps into a single PR. `.github/workflows/dependabot-auto-merge.yml` then
+enables auto-merge on those PRs, so they merge themselves once the required
+checks pass. Majors are kept out of the groups and wait for a human.
 
 ---
 
