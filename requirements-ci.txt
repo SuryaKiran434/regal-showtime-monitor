@@ -1,0 +1,25 @@
+# Test-only dependencies. requirements.txt stays the runtime set; nothing in
+# here is imported by monitor.py or lock.py.
+#
+# These pins used to live on a `pip install pytest==... pytest-cov==...`
+# command line inside .github/workflows/ci.yml. Dependabot parses manifests,
+# not shell, so pins written that way are invisible to it: it can bump a
+# version in requirements.txt while CI keeps installing whatever the workflow
+# hard-codes, and the version that ships is then the one version never tested.
+# Declaring them in a file the pip ecosystem already scans (dependabot.yml
+# covers directory "/") puts them back under the same weekly grouped update as
+# everything else.
+#
+# Deliberately NOT `-r requirements.txt`: the two sets are installed by
+# separate CI steps and are meant to stay separable. Chaining them here would
+# make this file a superset of the runtime set, so anything installing it --
+# now or later -- would silently pull the test tools too, and the runtime
+# manifest would no longer be the single answer to "what does this app need to
+# run?".
+#
+# Pinned to the exact versions CI already resolved, so this locks the current
+# set rather than moving it. Bump intentionally -- via Dependabot or a
+# deliberate edit -- not implicitly.
+
+pytest==9.1.1
+pytest-cov==7.1.0
